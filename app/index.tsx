@@ -52,7 +52,7 @@ const collectionStorageKey = "stickerswapbook.collection.v1";
 const privacyPolicyUrl = "https://naumz13.github.io/swapbook-sticker-collectors/privacy-policy.html";
 
 const sampleImport = [
-  "StickerSwapbook - FIFA World Cup 2026",
+  "StickerSwapbook - Football Sticker Album 2026",
   "",
   "Missing: ARG5, MEX2, FRA9, FWC10, SCO2",
   "Duplicates: ARG3 x2, BRA7 x3, USA11 x2, FWC11 x2",
@@ -219,7 +219,7 @@ export default function Index() {
   };
 
   const resetCollection = () => {
-    Alert.alert("Reset collection?", "This clears your World Cup 2026 collection.", [
+    Alert.alert("Reset collection?", "This clears your Football Sticker Album 2026 collection.", [
       { text: "Cancel", style: "cancel" },
       {
         text: "Reset",
@@ -247,7 +247,7 @@ export default function Index() {
         <View style={styles.hero}>
           <View style={styles.heroTop}>
             <View style={styles.heroTitleGroup}>
-              <Text style={styles.eyebrow}>World Cup 2026 album</Text>
+              <Text style={styles.eyebrow}>Football Sticker Album 2026</Text>
               <Text style={styles.title}>StickerSwapbook</Text>
             </View>
 
@@ -646,7 +646,7 @@ function formatDuplicateLabel(code: string, quantity: number) {
 
 function buildShareMessage(missingCodes: string[], duplicateCodes: string[]) {
   return [
-    "StickerSwapbook - FIFA World Cup 2026",
+    "StickerSwapbook - Football Sticker Album 2026",
     "",
     `Missing: ${formatListForShare(missingCodes)}`,
     `Duplicates: ${formatListForShare(duplicateCodes)}`,
