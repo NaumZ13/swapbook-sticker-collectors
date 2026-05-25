@@ -1,10 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ComponentProps } from "react";
 import {
   Alert,
+  Linking,
   Pressable,
   ScrollView,
   Share,
@@ -46,6 +48,8 @@ const albumStickers: Sticker[] = albumSections.flatMap((section) =>
 );
 const stickerCodeSet = new Set(albumStickers.map((sticker) => sticker.code));
 const maxVisibleCodes = 80;
+const collectionStorageKey = "stickerswapbook.collection.v1";
+const privacyPolicyUrl = "https://naumz13.github.io/swapbook-sticker-collectors/privacy-policy.html";
 
 const sampleImport = [
   "StickerSwapbook - FIFA World Cup 2026",
@@ -59,6 +63,41 @@ export default function Index() {
   const [importText, setImportText] = useState("");
   const [importedList, setImportedList] = useState<ImportedList | null>(null);
   const [openSections, setOpenSections] = useState<OpenSections>({});
+  const [hasLoadedCollection, setHasLoadedCollection] = useState(false);
+
+  useEffect(() => {
+    const loadCollection = async () => {
+      try {
+        const savedCollection = await AsyncStorage.getItem(collectionStorageKey);
+
+        if (savedCollection) {
+          setCollection(sanitizeCollection(JSON.parse(savedCollection)));
+        }
+      } catch {
+        Alert.alert("Collection not loaded", "Your saved stickers could not be loaded on this device.");
+      } finally {
+        setHasLoadedCollection(true);
+      }
+    };
+
+    loadCollection();
+  }, []);
+
+  useEffect(() => {
+    if (!hasLoadedCollection) {
+      return;
+    }
+
+    const saveCollection = async () => {
+      try {
+        await AsyncStorage.setItem(collectionStorageKey, JSON.stringify(collection));
+      } catch {
+        Alert.alert("Collection not saved", "Your latest sticker changes could not be saved on this device.");
+      }
+    };
+
+    saveCollection();
+  }, [collection, hasLoadedCollection]);
 
   const ownedStickers = useMemo(
     () => albumStickers.filter((sticker) => getQuantity(collection, sticker.code) > 0),
@@ -172,6 +211,10 @@ export default function Index() {
         },
       },
     ]);
+  };
+
+  const openPrivacyPolicy = async () => {
+    await Linking.openURL(privacyPolicyUrl);
   };
 
   return (
@@ -367,6 +410,14 @@ export default function Index() {
             </View>
           )}
         </View>
+
+        <Pressable
+          accessibilityRole="link"
+          onPress={openPrivacyPolicy}
+          style={({ pressed }) => [styles.footerLink, pressed && styles.pressed]}
+        >
+          <Text style={styles.footerLinkText}>Privacy Policy</Text>
+        </Pressable>
       </ScrollView>
     </>
   );
@@ -483,6 +534,26 @@ function StickerStateIcon({ quantity }: { quantity: number }) {
 
 function getQuantity(collection: Collection, code: string) {
   return collection[code] ?? 0;
+}
+
+function sanitizeCollection(value: unknown): Collection {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return {};
+  }
+
+  return Object.entries(value).reduce<Collection>((collection, [code, quantity]) => {
+    if (!stickerCodeSet.has(code) || typeof quantity !== "number") {
+      return collection;
+    }
+
+    const safeQuantity = Math.max(0, Math.min(9, Math.floor(quantity)));
+
+    if (safeQuantity > 0) {
+      collection[code] = safeQuantity;
+    }
+
+    return collection;
+  }, {});
 }
 
 function getStickerState(quantity: number): StickerState {
@@ -1033,5 +1104,15 @@ const styles = StyleSheet.create({
     color: "#12312D",
     fontSize: 15,
     fontWeight: "900",
+  },
+  footerLink: {
+    minHeight: 42,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  footerLinkText: {
+    color: "#2563EB",
+    fontSize: 14,
+    fontWeight: "800",
   },
 });
