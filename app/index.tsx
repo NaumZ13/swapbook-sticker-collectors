@@ -200,6 +200,11 @@ export default function Index() {
     setImportedList(parseImportedList(sampleImport));
   };
 
+  const clearImportText = () => {
+    setImportText("");
+    setImportedList(null);
+  };
+
   const clearCollection = async () => {
     try {
       await AsyncStorage.removeItem(collectionStorageKey);
@@ -214,7 +219,7 @@ export default function Index() {
   };
 
   const resetCollection = () => {
-    Alert.alert("Reset collection?", "This clears your World Cup 2026 test collection.", [
+    Alert.alert("Reset collection?", "This clears your World Cup 2026 collection.", [
       { text: "Cancel", style: "cancel" },
       {
         text: "Reset",
@@ -397,14 +402,22 @@ export default function Index() {
         <View style={styles.importPanel}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Import swap list</Text>
-            <Pressable accessibilityRole="button" onPress={loadSampleImport}>
-              <Text style={styles.linkText}>Use sample</Text>
-            </Pressable>
+            <View style={styles.importActions}>
+              <Pressable accessibilityRole="button" onPress={loadSampleImport}>
+                <Text style={styles.linkText}>Use sample</Text>
+              </Pressable>
+              <Pressable accessibilityRole="button" onPress={clearImportText}>
+                <Text style={styles.clearLinkText}>Clear</Text>
+              </Pressable>
+            </View>
           </View>
 
           <TextInput
             multiline
-            onChangeText={setImportText}
+            onChangeText={(value) => {
+              setImportText(value);
+              setImportedList(null);
+            }}
             placeholder={"Missing: ARG5, MEX2, FWC10\nDuplicates: ARG3 x2, BRA7 x3"}
             placeholderTextColor="#8A9894"
             style={styles.importInput}
@@ -604,11 +617,7 @@ function formatCompletionPercent(completion: number) {
     return "0%";
   }
 
-  if (completion < 10) {
-    return `${completion.toFixed(1)}%`;
-  }
-
-  return `${Math.round(completion)}%`;
+  return `${completion.toFixed(1)}%`;
 }
 
 function getSectionOwnedCount(codes: string[], collection: Collection) {
@@ -775,16 +784,16 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   heroBadge: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
+    width: 78,
+    height: 78,
+    borderRadius: 39,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#E8F5EF",
   },
   heroBadgeValue: {
     color: "#047857",
-    fontSize: 20,
+    fontSize: 19,
     fontWeight: "900",
   },
   heroBadgeLabel: {
@@ -1093,6 +1102,16 @@ const styles = StyleSheet.create({
   },
   linkText: {
     color: "#2563EB",
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  importActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+  },
+  clearLinkText: {
+    color: "#BE123C",
     fontSize: 14,
     fontWeight: "800",
   },
