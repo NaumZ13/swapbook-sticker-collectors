@@ -406,9 +406,11 @@ export default function Index() {
               <Pressable accessibilityRole="button" onPress={loadSampleImport}>
                 <Text style={styles.linkText}>Use sample</Text>
               </Pressable>
-              <Pressable accessibilityRole="button" onPress={clearImportText}>
-                <Text style={styles.clearLinkText}>Clear</Text>
-              </Pressable>
+              {(importText.length > 0 || importedList) && (
+                <Pressable accessibilityRole="button" onPress={clearImportText}>
+                  <Text style={styles.clearLinkText}>Clear</Text>
+                </Pressable>
+              )}
             </View>
           </View>
 
