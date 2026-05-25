@@ -130,7 +130,8 @@ export default function Index() {
     [collection],
   );
 
-  const completion = Math.round((ownedStickers.length / albumStickers.length) * 100);
+  const completion = (ownedStickers.length / albumStickers.length) * 100;
+  const completionLabel = formatCompletionPercent(completion);
 
   const comparison = useMemo(() => {
     if (!importedList) {
@@ -199,16 +200,26 @@ export default function Index() {
     setImportedList(parseImportedList(sampleImport));
   };
 
+  const clearCollection = async () => {
+    try {
+      await AsyncStorage.removeItem(collectionStorageKey);
+    } catch {
+      Alert.alert("Reset warning", "Saved stickers could not be cleared from device storage.");
+    } finally {
+      setCollection({});
+      setImportText("");
+      setImportedList(null);
+      setOpenSections({});
+    }
+  };
+
   const resetCollection = () => {
     Alert.alert("Reset collection?", "This clears your World Cup 2026 test collection.", [
       { text: "Cancel", style: "cancel" },
       {
         text: "Reset",
         style: "destructive",
-        onPress: () => {
-          setCollection({});
-          setImportedList(null);
-        },
+        onPress: clearCollection,
       },
     ]);
   };
@@ -236,7 +247,7 @@ export default function Index() {
             </View>
 
             <View style={styles.heroBadge}>
-              <Text style={styles.heroBadgeValue}>{completion}%</Text>
+              <Text style={styles.heroBadgeValue}>{completionLabel}</Text>
               <Text style={styles.heroBadgeLabel}>filled</Text>
             </View>
           </View>
@@ -245,7 +256,15 @@ export default function Index() {
 
           <View style={styles.progressBlock}>
             <View style={styles.progressTrack}>
-              <View style={[styles.progressFill, { width: `${completion}%` }]} />
+              <View
+                style={[
+                  styles.progressFill,
+                  {
+                    minWidth: completion > 0 ? 4 : 0,
+                    width: `${completion}%`,
+                  },
+                ]}
+              />
             </View>
             <Text style={styles.progressCopy}>
               {ownedStickers.length} of {albumStickers.length} stickers filled
@@ -578,6 +597,18 @@ function getStickerStatusLabel(quantity: number) {
   }
 
   return `${quantity} copies`;
+}
+
+function formatCompletionPercent(completion: number) {
+  if (completion === 0) {
+    return "0%";
+  }
+
+  if (completion < 10) {
+    return `${completion.toFixed(1)}%`;
+  }
+
+  return `${Math.round(completion)}%`;
 }
 
 function getSectionOwnedCount(codes: string[], collection: Collection) {
